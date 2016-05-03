@@ -5,6 +5,7 @@
 --
 -- You can write comments in this file by starting them with two dashes, like
 -- these lines here.
+DROP DATABASE IF EXISTS tournament;
 CREATE DATABASE tournament;
 \connect tournament;
 CREATE TABLE players (id serial NOT NULL, 
@@ -13,17 +14,12 @@ CREATE TABLE players (id serial NOT NULL,
 	);
 CREATE TABLE matches (m_id serial NOT NULL, 
 	player1 integer, 
-	player2 integer, 
+	player2 integer,
+	winner integer, 
 	PRIMARY KEY (m_id), 
 	FOREIGN KEY (player1) REFERENCES players(id), 
 	FOREIGN KEY (player2) REFERENCES players(id)
 	);
-CREATE TABLE standings (
-    p_id integer NOT NULL,
-    win integer DEFAULT 0,
-    lose integer DEFAULT 0,
-    tie integer DEFAULT 0,
-    FOREIGN KEY (p_id) REFERENCES players(id)
-);
-CREATE VIEW summatches AS SELECT standings.p_id,
-    ((COALESCE(standings.win, 0) + COALESCE(standings.lose, 0)) + COALESCE(standings.tie, 0)) AS sum FROM standings;
+CREATE VIEW wins AS SELECT players.id, players.name, COUNT(matches.winner) AS wins FROM players LEFT JOIN matches ON players.id = matches.winner GROUP BY players.id;
+CREATE VIEW match_counter AS SELECT players.id, players.name, COUNT(matches) AS matches_played FROM players LEFT JOIN matches ON players.id = matches.player1 OR players.id = matches.player2 GROUP BY players.id;
+CREATE VIEW standings AS SELECT wins.id, wins.name, wins.wins, match_counter.matches_played FROM wins JOIN match_counter ON wins.id = match_counter.id ORDER BY wins DESC;
