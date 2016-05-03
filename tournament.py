@@ -157,7 +157,7 @@ def get_id_pairings(match_pairings, cursor, DB):
 		match_pairings.append(pair)
 		player1 += 2
 		player2 += 2
-    return match_pairings
+        return match_pairings
 
 
 def swissPairings():
